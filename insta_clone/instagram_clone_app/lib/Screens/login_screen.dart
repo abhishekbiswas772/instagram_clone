@@ -20,6 +20,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthMethods __authMethods = AuthMethods();
   bool isLoading = false;
 
+  @override
+  void dispose() {
+    super.dispose();
+    __emailTxtController.dispose();
+    __passwordTxtController.dispose();
+  }
+
   void __performUserLogin(BuildContext context) async {
     setState(() {
       isLoading = true;

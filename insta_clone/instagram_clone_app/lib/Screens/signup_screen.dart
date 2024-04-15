@@ -26,6 +26,16 @@ class _SignupScreenState extends State<SignupScreen> {
   Uint8List? __selectedImage;
   bool isLoading = false;
 
+  @override
+  void dispose() {
+    super.dispose();
+    __emailTxtController.dispose();
+    __bioController.dispose();
+    __emailTxtController.dispose();
+    __passwordTxtController.dispose();
+    __usernameController.dispose();
+  }
+
   void __performSignUpUser(BuildContext context) async {
     setState(() {
       isLoading = true;
