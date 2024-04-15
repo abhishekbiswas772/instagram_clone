@@ -27,7 +27,7 @@ class _FeedScreenState extends State<FeedScreen> {
   void getUser() async {
     QuerySnapshot<Map<String, dynamic>> _snapshot =
         await _authMethods.getUserDetails(_authMethods.user?.uid ?? "").first;
-    Map<String, dynamic> _modelMap = _snapshot.docs[0].data();
+    Map<String, dynamic> _modelMap = _snapshot.docs.first.data();
     UserModel _model = UserModel.fromMap(_modelMap);
     setState(() {
       model = _model;
@@ -168,9 +168,10 @@ class _PostCardState extends State<PostCard> {
               children: ["delete"]
                   .map((e) => InkWell(
                         onTap: () async {
-                          bool result = await _authMethods.deletePost(widget.snap?["postId"] ?? "");
-                          if(result == true){
-                            if(context.mounted){
+                          bool result = await _authMethods
+                              .deletePost(widget.snap?["postId"] ?? "");
+                          if (result == true) {
+                            if (context.mounted) {
                               Navigator.of(context).pop();
                             }
                           }
@@ -242,7 +243,8 @@ class _PostCardState extends State<PostCard> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
+                Container(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
                   height: MediaQuery.of(context).size.height * 0.35,
                   width: MediaQuery.of(context).size.width,
                   child: Image.network(

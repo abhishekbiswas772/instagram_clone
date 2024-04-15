@@ -49,22 +49,15 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
           );
         }
-      } else {
+      }
+    } else {
+      if (context.mounted) {
         setState(() {
           isLoading = false;
         });
-        if (context.mounted) {
-          _signupScaffoldKey.currentState?.showSnackBar(const SnackBar(
-              content: Text(
-                  "Error in Registering user, Please verify the Register Details")));
-        }
+        _signupScaffoldKey.currentState?.showSnackBar(const SnackBar(
+            content: Text("Required a Profile Pic for registring to app")));
       }
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      _signupScaffoldKey.currentState?.showSnackBar(const SnackBar(
-          content: Text("Required a Profile Pic for registring to app")));
     }
   }
 

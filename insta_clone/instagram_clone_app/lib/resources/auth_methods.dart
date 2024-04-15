@@ -62,7 +62,6 @@ class AuthMethods {
             bio: bio,
             followers: [],
             following: [],
-            file: fileImage,
             photoUrl: __downloadImageURL);
 
         await _firestore

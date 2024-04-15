@@ -136,8 +136,7 @@ class _CommentScreenState extends State<CommentScreen> {
                   return __buildCommentCard(snapshot.data?.docs[index].data());
                 });
           }),
-      bottomNavigationBar: SafeArea(
-          child: Container(
+      bottomNavigationBar: Container(
         height: kToolbarHeight,
         margin:
             EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -150,10 +149,13 @@ class _CommentScreenState extends State<CommentScreen> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 8),
-              child: Expanded(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width - (2 * 18) - 100,
                 child: TextField(
+                  maxLines: null,
                   controller: _commentController,
                   decoration: InputDecoration(
+                    hintStyle: const TextStyle(fontSize: 12),
                     hintText: "Comment as ${model?.username ?? ""}",
                     border: InputBorder.none,
                   ),
@@ -174,7 +176,7 @@ class _CommentScreenState extends State<CommentScreen> {
             )
           ],
         ),
-      )),
+      ),
     );
   }
 }

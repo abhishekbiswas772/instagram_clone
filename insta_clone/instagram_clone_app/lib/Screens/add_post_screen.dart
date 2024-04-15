@@ -57,8 +57,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 Uint8List? _imageFile =
                     await ImagePickerController.picImage(ImageSource.camera);
                 setState(() {
-                  isImageSelected = true;
                   __imageFile = _imageFile;
+                  isImageSelected = true;
                 });
               },
             ),
@@ -73,8 +73,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 Uint8List? _imageFile =
                     await ImagePickerController.picImage(ImageSource.gallery);
                 setState(() {
-                  isImageSelected = true;
                   __imageFile = _imageFile;
+                  isImageSelected = true;
                 });
               },
             ),

@@ -15,14 +15,14 @@ class _SearchScreenState extends State<SearchScreen> {
   bool isShowUser = false;
 
   getUsers(String text) async {
-    await FirebaseFirestore.instance
+    return await FirebaseFirestore.instance
         .collection('users')
         .where('username', isGreaterThanOrEqualTo: text)
         .get();
   }
 
   getPosts() async {
-    await FirebaseFirestore.instance.collection('posts').get();
+    return await FirebaseFirestore.instance.collection('posts').get();
   }
 
   @override
@@ -73,19 +73,22 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: CircularProgressIndicator(),
                   ));
                 }
-                return StaggeredGridView.countBuilder(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  itemCount: (snapshot.data! as dynamic).docs.length,
-                  staggeredTileBuilder: (index) => StaggeredTile.count(
-                      (index % 7 == 0) ? 2 : 1, (index % 7 == 0) ? 2 : 1),
-                  itemBuilder: (context, index) {
-                    return Image.network(
-                      (snapshot.data! as dynamic).docs[index]["postUrl"],
-                      fit: BoxFit.cover,
-                    );
-                  },
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8),
+                  child: StaggeredGridView.countBuilder(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    itemCount: (snapshot.data! as dynamic).docs.length,
+                    staggeredTileBuilder: (index) => StaggeredTile.count(
+                        (index % 7 == 0) ? 2 : 1, (index % 7 == 0) ? 2 : 1),
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        (snapshot.data! as dynamic).docs[index]["postUrl"],
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
                 );
               }),
     );
