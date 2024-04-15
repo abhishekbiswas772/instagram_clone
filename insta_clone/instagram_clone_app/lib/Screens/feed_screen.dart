@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:instagram_clone_app/Screens/comment_screen.dart';
 import 'package:instagram_clone_app/models/auth_model.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
@@ -15,10 +16,146 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
   final AuthMethods _authMethods = AuthMethods();
-  bool isLikeAnimating = false;
-  final GlobalKey<ScaffoldMessengerState> _feedScreenScaffoldKey =
-      GlobalKey<ScaffoldMessengerState>();
   UserModel? model;
+
+  @override
+  void initState() {
+    super.initState();
+    getUser();
+  }
+
+  void getUser() async {
+    QuerySnapshot<Map<String, dynamic>> _snapshot =
+        await _authMethods.getUserDetails(_authMethods.user?.uid ?? "").first;
+    Map<String, dynamic> _modelMap = _snapshot.docs[0].data();
+    UserModel _model = UserModel.fromMap(_modelMap);
+    setState(() {
+      model = _model;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: SvgPicture.asset(
+          "assets/ic_instagram.svg",
+          color: primaryColor,
+          height: 32,
+        ),
+        backgroundColor: mobileBackgroundColor,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.messenger_outline,
+            ),
+          )
+        ],
+      ),
+      body: StreamBuilder(
+          stream: _authMethods.getAllPostFromFirebase(),
+          builder: (context,
+              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return ListView.builder(
+                itemCount: snapshot.data?.docs.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    child: PostCard(
+                        snap: snapshot.data?.docs[index].data(), model: model!),
+                  );
+                });
+          }),
+    );
+  }
+}
+
+class LikeAnimation extends StatefulWidget {
+  final Widget child;
+  final bool isAnimating;
+  final Duration duration;
+  final VoidCallback? onEnd;
+  final bool smallLike;
+  const LikeAnimation(
+      {super.key,
+      required this.child,
+      required this.isAnimating,
+      this.duration = const Duration(milliseconds: 150),
+      required this.onEnd,
+      this.smallLike = false});
+
+  @override
+  State<LikeAnimation> createState() => _LikeAnimationState();
+}
+
+class _LikeAnimationState extends State<LikeAnimation>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: widget.duration.inMilliseconds ~/ 2));
+    scale = Tween<double>(begin: 1, end: 1.2).animate(_animationController);
+  }
+
+  @override
+  void didUpdateWidget(covariant LikeAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isAnimating != oldWidget.isAnimating) {
+      startAnimation();
+    }
+  }
+
+  startAnimation() async {
+    if (widget.isAnimating || widget.smallLike) {
+      await _animationController.forward();
+      await _animationController.reverse();
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      if (widget.onEnd != null) {
+        widget.onEnd!();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _animationController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: scale,
+      child: widget.child,
+    );
+  }
+}
+
+class PostCard extends StatefulWidget {
+  final Map<String, dynamic>? snap;
+  final UserModel model;
+  const PostCard({super.key, required this.snap, required this.model});
+
+  @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  final AuthMethods _authMethods = AuthMethods();
+  bool isLikeAnimating = false;
+  int commentLength = 0;
 
   __showDilog(BuildContext context) {
     return showDialog(
@@ -146,7 +283,16 @@ class _FeedScreenState extends State<FeedScreen> {
                         : const Icon(Icons.favorite_border),
                   )),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (context) => CommentScreen(
+                                snap: snap!,
+                              )))
+                      .then((value) {
+                    getComments();
+                  });
+                },
                 icon: const Icon(
                   Icons.comment_outlined,
                 ),
@@ -216,8 +362,8 @@ class _FeedScreenState extends State<FeedScreen> {
                 alignment: Alignment.topLeft,
                 padding: const EdgeInsets.only(top: 4, left: 10),
                 child: Text(
-                  "View all 200 Comments",
-                  style: TextStyle(fontSize: 16, color: secondaryColor),
+                  "view all ${commentLength.toString()} comments",
+                  style: const TextStyle(fontSize: 16, color: secondaryColor),
                 )),
           ),
           Container(
@@ -236,124 +382,21 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   void initState() {
     super.initState();
-    getUser();
+    getComments();
   }
 
-  void getUser() async {
-    QuerySnapshot<Map<String, dynamic>> _snapshot =
-        await _authMethods.getUserDetails(_authMethods.user?.uid ?? "").first;
-    Map<String, dynamic> _modelMap = _snapshot.docs[0].data();
-    UserModel _model = UserModel.fromMap(_modelMap);
-    setState(() {
-      model = _model;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: SvgPicture.asset(
-          "assets/ic_instagram.svg",
-          color: primaryColor,
-          height: 32,
-        ),
-        backgroundColor: mobileBackgroundColor,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.messenger_outline,
-            ),
-          )
-        ],
-      ),
-      body: StreamBuilder(
-          stream: _authMethods.getAllPostFromFirebase(),
-          builder: (context,
-              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return ListView.builder(
-                itemCount: snapshot.data?.docs.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    child: __buildPostCard(
-                        snapshot.data?.docs[index].data(), context, model!),
-                  );
-                });
-          }),
-    );
-  }
-}
-
-class LikeAnimation extends StatefulWidget {
-  final Widget child;
-  final bool isAnimating;
-  final Duration duration;
-  final VoidCallback? onEnd;
-  final bool smallLike;
-  const LikeAnimation(
-      {super.key,
-      required this.child,
-      required this.isAnimating,
-      this.duration = const Duration(milliseconds: 150),
-      required this.onEnd,
-      this.smallLike = false});
-
-  @override
-  State<LikeAnimation> createState() => _LikeAnimationState();
-}
-
-class _LikeAnimationState extends State<LikeAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: widget.duration.inMilliseconds ~/ 2));
-    scale = Tween<double>(begin: 1, end: 1.2).animate(_animationController);
-  }
-
-  @override
-  void didUpdateWidget(covariant LikeAnimation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isAnimating != oldWidget.isAnimating) {
-      startAnimation();
-    }
-  }
-
-  startAnimation() async {
-    if (widget.isAnimating || widget.smallLike) {
-      await _animationController.forward();
-      await _animationController.reverse();
-      await Future.delayed(const Duration(milliseconds: 200));
-
-      if (widget.onEnd != null) {
-        widget.onEnd!();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _animationController.dispose();
+  void getComments() async {
+    QuerySnapshot snap = await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.snap?['postId'])
+        .collection('comments')
+        .get();
+    commentLength = snap.docs.length;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: scale,
-      child: widget.child,
-    );
+    return __buildPostCard(widget.snap, context, widget.model);
   }
 }

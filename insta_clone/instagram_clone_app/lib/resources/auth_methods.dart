@@ -19,13 +19,22 @@ class AuthMethods {
     return _firestore.collection('posts').snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllCommentForPost(
+      String postId) {
+    return _firestore
+        .collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .orderBy('datePublished', descending: true)
+        .snapshots();
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> getUserDetails(String userId) {
     return _firestore
         .collection('users')
         .where('uid', isEqualTo: userId)
         .snapshots();
   }
-  
 
   // ignore: non_constant_identifier_names
   Future<bool> signup_user(String email, String password, String username,
@@ -144,6 +153,33 @@ class AuthMethods {
         });
       }
       return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> postCommentToPost(String postId, String text, String uid,
+      String name, String profilePic) async {
+    try {
+      if (text.isNotEmpty) {
+        String commentId = const Uuid().v1();
+        await _firestore
+            .collection('posts')
+            .doc(postId)
+            .collection('comments')
+            .doc(commentId)
+            .set({
+          'profilePic': profilePic,
+          'name': name,
+          'uid': uid,
+          'text': text,
+          'commentId': commentId,
+          'datePublished': DateTime.now()
+        });
+        return true;
+      } else {
+        return false;
+      }
     } catch (_) {
       return false;
     }
