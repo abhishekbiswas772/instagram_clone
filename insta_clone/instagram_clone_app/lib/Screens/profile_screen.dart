@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram_clone_app/Screens/login_screen.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
 
@@ -147,12 +148,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ((FirebaseAuth.instance.currentUser?.uid ??
                                                 "") ==
                                             widget.uid)
-                                        ? __buildFollowButton(
-                                            () {},
-                                            mobileBackgroundColor,
-                                            Colors.grey,
-                                            "Signout",
-                                            primaryColor)
+                                        ? __buildFollowButton(() async {
+                                            await _authMethods.performSignOut();
+                                            if (context.mounted) {
+                                              Navigator.of(context).pushReplacement(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const LoginScreen()));
+                                            }
+                                          }, mobileBackgroundColor, Colors.grey,
+                                            "Signout", primaryColor)
                                         : (isFollowing)
                                             ? __buildFollowButton(
                                                 () async {

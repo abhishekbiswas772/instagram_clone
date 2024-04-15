@@ -219,4 +219,8 @@ class AuthMethods {
       return false;
     }
   }
+
+  Future<void> performSignOut() async {
+    await _authFirebase.signOut();
+  }
 }
