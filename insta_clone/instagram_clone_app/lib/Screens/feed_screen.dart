@@ -167,7 +167,14 @@ class _PostCardState extends State<PostCard> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               children: ["delete"]
                   .map((e) => InkWell(
-                        onTap: () {},
+                        onTap: () async {
+                          bool result = await _authMethods.deletePost(widget.snap?["postId"] ?? "");
+                          if(result == true){
+                            if(context.mounted){
+                              Navigator.of(context).pop();
+                            }
+                          }
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 16),

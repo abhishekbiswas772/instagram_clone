@@ -184,4 +184,13 @@ class AuthMethods {
       return false;
     }
   }
+
+  Future<bool> deletePost(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).delete();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }
