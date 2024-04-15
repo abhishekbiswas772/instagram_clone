@@ -13,20 +13,19 @@ class AuthMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storageFirebase = FirebaseStorage.instance;
   String? _authUsrId;
+  User? get user => _authFirebase.currentUser;
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getAllPostFromFirebase() {
     return _firestore.collection('posts').snapshots();
   }
 
-  Future<UserModel?> getUserDetails() async {
-    User? currentUser = _authFirebase.currentUser;
-    if (currentUser != null) {
-      DocumentSnapshot documentSnapshot =
-          await _firestore.collection('users').doc(currentUser.uid).get();
-      return UserModel.fromSnap(documentSnapshot);
-    }
-    return null;
+  Stream<QuerySnapshot<Map<String, dynamic>>> getUserDetails(String userId) {
+    return _firestore
+        .collection('users')
+        .where('uid', isEqualTo: userId)
+        .snapshots();
   }
+  
 
   // ignore: non_constant_identifier_names
   Future<bool> signup_user(String email, String password, String username,

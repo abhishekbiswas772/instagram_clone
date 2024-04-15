@@ -2,11 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram_clone_app/models/auth_model.dart';
-import 'package:instagram_clone_app/providers/providers.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -20,6 +18,7 @@ class _FeedScreenState extends State<FeedScreen> {
   bool isLikeAnimating = false;
   final GlobalKey<ScaffoldMessengerState> _feedScreenScaffoldKey =
       GlobalKey<ScaffoldMessengerState>();
+  UserModel? model;
 
   __showDilog(BuildContext context) {
     return showDialog(
@@ -44,10 +43,8 @@ class _FeedScreenState extends State<FeedScreen> {
         });
   }
 
-  Widget __buildPostCard(Map<String, dynamic>? snap, BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
-    UserModel _model = userProvider.getUser;
-
+  Widget __buildPostCard(
+      Map<String, dynamic>? snap, BuildContext context, UserModel _model) {
     return Container(
       color: mobileBackgroundColor,
       padding: const EdgeInsets.symmetric(
@@ -56,7 +53,7 @@ class _FeedScreenState extends State<FeedScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16)
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10)
                 .copyWith(right: 0),
             child: Row(
               children: [
@@ -89,22 +86,14 @@ class _FeedScreenState extends State<FeedScreen> {
               ],
             ),
           ),
-          InkWell(
+          GestureDetector(
             onDoubleTap: () async {
               bool result = await _authMethods.likePost(
                   snap?["postId"], _model.uid, snap?["likes"]);
-              if (result) {
-                setState(() {
-                  isLikeAnimating = true;
-                });
-              } else {
-                if (context.mounted) {
-                  _feedScreenScaffoldKey.currentState?.showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text("Some error occured in liking the post")));
-                }
-              }
+              print(result);
+              setState(() {
+                isLikeAnimating = true;
+              });
             },
             child: Stack(
               alignment: Alignment.center,
@@ -112,7 +101,10 @@ class _FeedScreenState extends State<FeedScreen> {
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.35,
                   width: MediaQuery.of(context).size.width,
-                  child: Image.network(fit: BoxFit.cover, snap?["postUrl"]),
+                  child: Image.network(
+                    snap?["postUrl"],
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 200),
@@ -135,6 +127,7 @@ class _FeedScreenState extends State<FeedScreen> {
             ),
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               LikeAnimation(
                   isAnimating: snap?["likes"].contains(_model.uid),
@@ -144,18 +137,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     onPressed: () async {
                       bool result = await _authMethods.likePost(
                           snap?["postId"], _model.uid, snap?["likes"]);
-                      if (result) {
-                        setState(() {
-                          isLikeAnimating = true;
-                        });
-                      } else {
-                        if (context.mounted) {
-                          _feedScreenScaffoldKey.currentState?.showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      "Some error occured in liking the post")));
-                        }
-                      }
+                      print(result);
                     },
                     icon: (snap?["likes"].contains(_model.uid))
                         ? const Icon(
@@ -189,10 +171,11 @@ class _FeedScreenState extends State<FeedScreen> {
           ),
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 16,
+              horizontal: 10,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DefaultTextStyle(
@@ -230,14 +213,16 @@ class _FeedScreenState extends State<FeedScreen> {
           InkWell(
             onTap: () {},
             child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                alignment: Alignment.topLeft,
+                padding: const EdgeInsets.only(top: 4, left: 10),
                 child: Text(
                   "View all 200 Comments",
                   style: TextStyle(fontSize: 16, color: secondaryColor),
                 )),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.topLeft,
+            padding: const EdgeInsets.only(top: 2, left: 10),
             child: Text(
               DateFormat.yMMMd().format(snap?["datePublished"].toDate()),
               style: const TextStyle(fontSize: 16, color: secondaryColor),
@@ -246,6 +231,22 @@ class _FeedScreenState extends State<FeedScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUser();
+  }
+
+  void getUser() async {
+    QuerySnapshot<Map<String, dynamic>> _snapshot =
+        await _authMethods.getUserDetails(_authMethods.user?.uid ?? "").first;
+    Map<String, dynamic> _modelMap = _snapshot.docs[0].data();
+    UserModel _model = UserModel.fromMap(_modelMap);
+    setState(() {
+      model = _model;
+    });
   }
 
   @override
@@ -282,7 +283,7 @@ class _FeedScreenState extends State<FeedScreen> {
                 itemBuilder: (context, index) {
                   return Container(
                     child: __buildPostCard(
-                        snapshot.data?.docs[index].data(), context),
+                        snapshot.data?.docs[index].data(), context, model!),
                   );
                 });
           }),

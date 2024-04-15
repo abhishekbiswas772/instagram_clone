@@ -1,12 +1,11 @@
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone_app/models/auth_model.dart';
-import 'package:instagram_clone_app/providers/providers.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
 import 'package:instagram_clone_app/utils/image_controller.dart';
-import 'package:provider/provider.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -22,6 +21,23 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Uint8List? __imageFile;
   bool isImageSelected = false;
   bool isPosted = false;
+  UserModel? model;
+
+  @override
+  void initState() {
+    super.initState();
+    getUser();
+  }
+
+  void getUser() async {
+    QuerySnapshot<Map<String, dynamic>> _snapshot =
+        await _authMethods.getUserDetails(_authMethods.user?.uid ?? "").first;
+    Map<String, dynamic> _modelMap = _snapshot.docs[0].data();
+    UserModel _model = UserModel.fromMap(_modelMap);
+    setState(() {
+      model = _model;
+    });
+  }
 
   _selectImage(BuildContext context) {
     return showDialog(
@@ -121,90 +137,97 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
-
-    return (isImageSelected == false)
-        ? SafeArea(
-            child: Center(
-              child: IconButton(
-                icon: const Icon(Icons.upload),
-                onPressed: () => _selectImage(context),
-              ),
-            ),
-          )
-        : Scaffold(
-            appBar: AppBar(
-              title: const Text("Post to"),
-              centerTitle: false,
-              backgroundColor: mobileBackgroundColor,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  __clearImage();
-                },
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      __postImage(context, __imageFile!, userProvider.getUser);
-                    },
-                    child: const Text(
-                      "Post",
-                      style: TextStyle(
-                        color: Colors.blueAccent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ))
-              ],
-            ),
-            body: Column(
-              children: [
-                (isPosted == false)
-                    ? Container(
-                        padding: const EdgeInsets.only(top: 0),
-                      )
-                    : const LinearProgressIndicator(),
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(userProvider.getUser.photoUrl),
+    return StreamBuilder(
+        stream: _authMethods.getUserDetails(_authMethods.user?.uid ?? ""),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return (isImageSelected == false)
+              ? SafeArea(
+                  child: Center(
+                    child: IconButton(
+                      icon: const Icon(Icons.upload),
+                      onPressed: () => _selectImage(context),
                     ),
-                    SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.45,
-                        child: TextField(
-                          controller: __captionTextController,
-                          decoration: const InputDecoration(
-                            hintText: "Write an caption...",
-                            border: InputBorder.none,
+                  ),
+                )
+              : Scaffold(
+                  appBar: AppBar(
+                    title: const Text("Post to"),
+                    centerTitle: false,
+                    backgroundColor: mobileBackgroundColor,
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        __clearImage();
+                      },
+                    ),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            __postImage(context, __imageFile!, model!);
+                          },
+                          child: const Text(
+                            "Post",
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ))
+                    ],
+                  ),
+                  body: Column(
+                    children: [
+                      (isPosted == false)
+                          ? Container(
+                              padding: const EdgeInsets.only(top: 0),
+                            )
+                          : const LinearProgressIndicator(),
+                      const Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                snapshot.data!.docs[0].data()["photoUrl"]),
                           ),
-                          maxLines: 8,
-                        )),
-                    SizedBox(
-                      height: 45,
-                      width: 45,
-                      child: AspectRatio(
-                        aspectRatio: 487 / 451,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              alignment: FractionalOffset.topCenter,
-                              fit: BoxFit.fill,
-                              image: MemoryImage(__imageFile!),
+                          SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.45,
+                              child: TextField(
+                                controller: __captionTextController,
+                                decoration: const InputDecoration(
+                                  hintText: "Write an caption...",
+                                  border: InputBorder.none,
+                                ),
+                                maxLines: 8,
+                              )),
+                          SizedBox(
+                            height: 45,
+                            width: 45,
+                            child: AspectRatio(
+                              aspectRatio: 487 / 451,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    alignment: FractionalOffset.topCenter,
+                                    fit: BoxFit.fill,
+                                    image: MemoryImage(__imageFile!),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    const Divider(),
-                  ],
-                )
-              ],
-            ),
-          );
+                          const Divider(),
+                        ],
+                      )
+                    ],
+                  ),
+                );
+        });
   }
 }

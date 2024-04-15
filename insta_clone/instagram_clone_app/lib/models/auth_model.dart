@@ -35,6 +35,29 @@ class UserModel {
     );
   }
 
+  static UserModel fromMap(Map<String, dynamic> snapshot) {
+    Uint8List? fileData;
+    if (snapshot['file'] != null) {
+      if (snapshot['file'] is Uint8List) {
+        fileData = snapshot['file'];
+      } else if (snapshot['file'] is List<dynamic>) {
+        // Handle conversion from List<dynamic> to Uint8List (e.g., for image data)
+        List<dynamic> fileList = snapshot['file'];
+        fileData = Uint8List.fromList(List<int>.from(fileList));
+      }
+    }
+    return UserModel(
+      username: snapshot["username"],
+      uid: snapshot["uid"],
+      email: snapshot["email"],
+      photoUrl: snapshot["photoUrl"],
+      bio: snapshot["bio"],
+      file: fileData!,
+      followers: snapshot["followers"],
+      following: snapshot["following"],
+    );
+  }
+
   Map<String, dynamic> toJson() => {
         "username": username,
         "email": email,

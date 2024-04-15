@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram_clone_app/Screens/mobile_screen_layout.dart';
 import 'package:instagram_clone_app/Screens/signup_screen.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
@@ -20,20 +21,29 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   void __performUserLogin(BuildContext context) async {
-    setState(() {isLoading = true;});
+    setState(() {
+      isLoading = true;
+    });
     String __emailText = __emailTxtController.text;
     String __passwordText = __passwordTxtController.text;
     bool result = await __authMethods.login_user(__emailText, __passwordText);
-    if (result){
-      if(context.mounted){
-        // move to home
-        setState(() {isLoading = false;});
+    if (result) {
+      if (context.mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MobileScreenLayout(),
+          ),
+        );
       }
-    }else{
-      if(context.mounted){
-        _loginScaffoldKey.currentState?.showSnackBar(const SnackBar(content: Text(
-          "Failed to login user in app, Please check the cred or try again latter"
-        )));
+    } else {
+      if (context.mounted) {
+        _loginScaffoldKey.currentState?.showSnackBar(const SnackBar(
+            content: Text(
+                "Failed to login user in app, Please check the cred or try again latter")));
       }
     }
   }
@@ -75,9 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
             color: blueColor,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(4)))),
-        child: (isLoading == false) ? const Text("Log in") : const CircularProgressIndicator(
-          color: primaryColor,
-        ),
+        child: (isLoading == false)
+            ? const Text("Log in")
+            : const CircularProgressIndicator(
+                color: primaryColor,
+              ),
       ),
     );
   }

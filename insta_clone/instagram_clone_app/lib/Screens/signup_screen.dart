@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:instagram_clone_app/Screens/mobile_screen_layout.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
 import 'package:instagram_clone_app/utils/image_controller.dart';
@@ -26,7 +27,9 @@ class _SignupScreenState extends State<SignupScreen> {
   bool isLoading = false;
 
   void __performSignUpUser(BuildContext context) async {
-    setState(() {isLoading = true;});
+    setState(() {
+      isLoading = true;
+    });
     String __usernameTxt = __usernameController.text;
     String __passwordTxt = __passwordTxtController.text;
     String __bioTxt = __bioController.text;
@@ -34,24 +37,34 @@ class _SignupScreenState extends State<SignupScreen> {
     if (__selectedImage != null) {
       bool result = await __authMethods.signup_user(
           __emailTxt, __passwordTxt, __usernameTxt, __bioTxt, __selectedImage!);
-      if (result){
-        if (context.mounted){
+      if (result) {
+        if (context.mounted) {
           setState(() {
             isLoading = false;
           });
-          // move to Home screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MobileScreenLayout(),
+            ),
+          );
         }
-      }else{
-        if(context.mounted){
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        if (context.mounted) {
           _signupScaffoldKey.currentState?.showSnackBar(const SnackBar(
               content: Text(
                   "Error in Registering user, Please verify the Register Details")));
         }
       }
-    }else{
+    } else {
+      setState(() {
+        isLoading = false;
+      });
       _signupScaffoldKey.currentState?.showSnackBar(const SnackBar(
-          content: Text(
-              "Required a Profile Pic for registring to app")));
+          content: Text("Required a Profile Pic for registring to app")));
     }
   }
 
@@ -110,7 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(4)))),
         child: (isLoading == false)
-            ? const Text("Sing up")
+            ? const Text("Signup")
             : const Center(
                 child: CircularProgressIndicator(
                   color: primaryColor,
@@ -157,7 +170,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     top: 90,
                     left: 90,
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        __picProfileImage(context);
+                      },
                       icon: const Icon(Icons.add_a_photo),
                     ),
                   ),
