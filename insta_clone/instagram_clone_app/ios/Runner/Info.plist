@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>For posting Images and view or recording</string>
+	<string>InstaClone want to accss microphone for seamless posting / sharing of images</string>
 	<key>NSCameraUsageDescription</key>
-	<string>For posting Images live</string>
+	<string>InstaClone want to accss microphone for seamless posting / sharing of images</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>For posting Images</string>
+	<string>InstaClone want to accss microphone for seamless posting / sharing of images</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Instagram Clone App</string>
+	<string>InstaClone</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
