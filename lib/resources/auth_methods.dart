@@ -221,6 +221,10 @@ class AuthMethods {
   }
 
   Future<void> performSignOut() async {
-    await _authFirebase.signOut();
+    try {
+      await _authFirebase.signOut();
+    } catch (e) {
+      print('Error signing out: $e');
+    }
   }
 }

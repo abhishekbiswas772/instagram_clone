@@ -53,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onTap!();
         },
         child: Container(
-          width: 250,
+          width: 200,
           height: 30,
           decoration: BoxDecoration(
             color: backgroundColor,
@@ -169,11 +169,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               await _authMethods
                                                   .performSignOut();
                                               if (context.mounted) {
-                                                Navigator.of(context)
-                                                    .pushReplacement(
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                const LoginScreen()));
+                                                Navigator.pushAndRemoveUntil(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const LoginScreen(),
+                                                  ),
+                                                  (route) =>
+                                                      false, // Predicate that always returns false to remove all routes
+                                                );
                                               }
                                             },
                                               mobileBackgroundColor,
@@ -190,7 +194,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                     .currentUser
                                                                     ?.uid ??
                                                                 ""),
-                                                            userData["uid"] ?? "");
+                                                            userData["uid"] ??
+                                                                "");
                                                     isLoading = true;
                                                     setState(() {});
                                                     getData();
@@ -209,7 +214,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                     .currentUser
                                                                     ?.uid ??
                                                                 ""),
-                                                            userData["uid"] ?? "");
+                                                            userData["uid"] ??
+                                                                "");
                                                     isLoading = true;
                                                     setState(() {});
                                                     getData();
