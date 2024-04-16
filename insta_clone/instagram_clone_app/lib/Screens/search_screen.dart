@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:instagram_clone_app/Screens/profile_screen.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
+import 'package:instagram_clone_app/utils/dimensions.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -89,8 +90,14 @@ class _SearchScreenState extends State<SearchScreen> {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                     itemCount: (snapshot.data! as dynamic).docs.length,
-                    staggeredTileBuilder: (index) => StaggeredTile.count(
-                        (index % 7 == 0) ? 2 : 1, (index % 7 == 0) ? 2 : 1),
+                    staggeredTileBuilder: (index) => (MediaQuery.of(context)
+                                .size
+                                .width <
+                            webScreenSize)
+                        ? StaggeredTile.count(
+                            (index % 7 == 0) ? 2 : 1, (index % 7 == 0) ? 2 : 1)
+                        : StaggeredTile.count(
+                            (index % 7 == 0) ? 1 : 1, (index % 7 == 0) ? 1 : 1),
                     itemBuilder: (context, index) {
                       return Image.network(
                         (snapshot.data! as dynamic).docs[index]["postUrl"],

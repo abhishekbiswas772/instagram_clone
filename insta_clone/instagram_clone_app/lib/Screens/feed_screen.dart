@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram_clone_app/Screens/comment_screen.dart';
 import 'package:instagram_clone_app/models/auth_model.dart';
 import 'package:instagram_clone_app/resources/auth_methods.dart';
 import 'package:instagram_clone_app/utils/colors.dart';
+import 'package:instagram_clone_app/utils/dimensions.dart';
 import 'package:intl/intl.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -37,23 +39,28 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: SvgPicture.asset(
-          "assets/ic_instagram.svg",
-          color: primaryColor,
-          height: 32,
-        ),
-        backgroundColor: mobileBackgroundColor,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.messenger_outline,
-            ),
-          )
-        ],
-      ),
+      backgroundColor: (MediaQuery.of(context).size.width < webScreenSize)
+          ? mobileBackgroundColor
+          : webBackgroundColor,
+      appBar: (MediaQuery.of(context).size.width < webScreenSize)
+          ? AppBar(
+              centerTitle: false,
+              title: SvgPicture.asset(
+                "assets/ic_instagram.svg",
+                color: primaryColor,
+                height: 32,
+              ),
+              backgroundColor: mobileBackgroundColor,
+              actions: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.messenger_outline,
+                  ),
+                )
+              ],
+            )
+          : null,
       body: StreamBuilder(
           stream: _authMethods.getAllPostFromFirebase(),
           builder: (context,
@@ -67,6 +74,15 @@ class _FeedScreenState extends State<FeedScreen> {
                 itemCount: snapshot.data?.docs.length,
                 itemBuilder: (context, index) {
                   return Container(
+                    margin: EdgeInsets.symmetric(
+                        horizontal:
+                            (MediaQuery.of(context).size.width > webScreenSize)
+                                ? (MediaQuery.of(context).size.width * 0.3)
+                                : 0,
+                        vertical:
+                            (MediaQuery.of(context).size.width > webScreenSize)
+                                ? 15
+                                : 0),
                     child: PostCard(
                         snap: snapshot.data?.docs[index].data(), model: model!),
                   );
@@ -191,7 +207,12 @@ class _PostCardState extends State<PostCard> {
   Widget __buildPostCard(
       Map<String, dynamic>? snap, BuildContext context, UserModel _model) {
     return Container(
-      color: mobileBackgroundColor,
+      decoration: BoxDecoration(
+          color: mobileBackgroundColor,
+          border: Border.all(
+              color: (MediaQuery.of(context).size.width > webScreenSize)
+                  ? secondaryColor
+                  : mobileBackgroundColor)),
       padding: const EdgeInsets.symmetric(
         vertical: 10,
       ),
