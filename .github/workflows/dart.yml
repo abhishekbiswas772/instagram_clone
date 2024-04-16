@@ -1,0 +1,73 @@
+name: Flutter Build and Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    name: 🚀 Build and Release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          architecture: x64
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Build iOS
+      - name: Build iOS release
+        run: |
+          flutter build ios --release --no-codesign
+          mkdir -p Payload
+          mv build/ios/iphoneos/Runner.app Payload
+          cd build/ios/iphoneos
+          zip -qq -r -9 FlutterIpaExport.ipa Payload
+
+      # Upload iOS IPA as release artifact
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v2
+        with:
+          name: iOS-ipa
+          path: build/ios/iphoneos/FlutterIpaExport.ipa
+
+      # Build macOS
+      - name: Build macOS release
+        run: flutter build macos --release
+
+      - name: Upload macOS build
+        uses: actions/upload-artifact@v2
+        with:
+          name: macOS-app
+          path: build/macos/Build/Products/Release
+
+      # Build Android
+      - name: Build Android release
+        run: flutter build apk --release
+
+      # Upload Android APK as release artifact
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # Create GitHub Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0
+          release_name: Release 1.0
+          body: |
+            This is the first release of the Flutter app.
+          draft: false
+          prerelease: false
