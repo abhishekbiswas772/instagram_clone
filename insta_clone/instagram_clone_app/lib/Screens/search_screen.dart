@@ -52,6 +52,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: CircularProgressIndicator(),
                   ));
                 }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SafeArea(
+                      child: Center(
+                    child: CircularProgressIndicator(),
+                  ));
+                }
                 return ListView.builder(
                     itemCount: (snapshot.data! as dynamic).docs.length,
                     itemBuilder: (context, index) {
@@ -66,10 +73,12 @@ class _SearchScreenState extends State<SearchScreen> {
                           leading: CircleAvatar(
                             backgroundImage: NetworkImage(
                                 (snapshot.data! as dynamic).docs[index]
-                                    ["photoUrl"]),
+                                        ["photoUrl"] ??
+                                    ""),
                           ),
                           title: Text((snapshot.data! as dynamic).docs[index]
-                              ["username"]),
+                                  ["username"] ??
+                              ""),
                         ),
                       );
                     });
@@ -100,7 +109,8 @@ class _SearchScreenState extends State<SearchScreen> {
                             (index % 7 == 0) ? 1 : 1, (index % 7 == 0) ? 1 : 1),
                     itemBuilder: (context, index) {
                       return Image.network(
-                        (snapshot.data! as dynamic).docs[index]["postUrl"],
+                        (snapshot.data! as dynamic).docs[index]["postUrl"] ??
+                            "",
                         fit: BoxFit.cover,
                       );
                     },

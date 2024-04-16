@@ -78,8 +78,11 @@ class _CommentScreenState extends State<CommentScreen> {
                       text: TextSpan(children: [
                     TextSpan(
                         text: snap?["name"] ?? "",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    TextSpan(text: " ${snap?["text"] ?? ""}")
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: primaryColor)),
+                    TextSpan(
+                        text: " ${snap?["text"] ?? ""}",
+                        style: const TextStyle(color: primaryColor))
                   ])),
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
