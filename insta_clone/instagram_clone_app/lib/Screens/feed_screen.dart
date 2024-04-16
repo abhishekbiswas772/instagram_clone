@@ -70,6 +70,13 @@ class _FeedScreenState extends State<FeedScreen> {
                 child: CircularProgressIndicator(),
               );
             }
+
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
             return ListView.builder(
                 itemCount: snapshot.data?.docs.length,
                 itemBuilder: (context, index) {
@@ -423,6 +430,10 @@ class _PostCardState extends State<PostCard> {
         .get();
     commentLength = snap.docs.length;
     setState(() {});
+    // context.mounted = true;
+    // if (context.mounted) {
+    //   setState(() {});
+    // }
   }
 
   @override
